@@ -1,0 +1,42 @@
+name: CodeQL
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: '12h'
+
+jobs:
+  analyze:
+    name: Analyze
+    permissions:
+      # Read-only permission for actions is required for CodeQL.
+      actions: read
+      # CodeQL requires read permissions for contents and metadata.
+      contents: read
+      security-events: write
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Initialize CodeQL for the 'java' language
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: java
+
+    # Build the code (required for some languages like Java)
+    - name: Build code
+      run: |
+        ./gradlew build
+
+    # Perform CodeQL analysis
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
