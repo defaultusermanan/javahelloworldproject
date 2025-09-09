@@ -1,14 +1,8 @@
 {
-  "scanSettings": {
-    "baseBranches": []
-  },
-  "checkRunSettings": {
-    "vulnerableCheckRunConclusionLevel": "failure",
-    "displayMode": "diff",
-    "useMendCheckNames": true
-  },
-  "issueSettings": {
-    "minSeverityLevel": "LOW",
-    "issueType": "DEPENDENCY"
+  "apiKey": "<API_KEY>",
+  "userKey": "<USER_KEY>",
+  "project": {
+    "name": "Java Hello World",
+    "version": "1.0.0"
   }
 }

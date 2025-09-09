@@ -1,9 +1,9 @@
-/target
-dependency-reduced-pom.xml
-
-# Others
-.classpath
-.project
-.settings/
-.vscode
+target/
+out/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+!src/main/resources/
 .DS_Store
