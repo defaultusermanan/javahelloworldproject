@@ -1,65 +1,78 @@
-version: '2.1'
+name: Maven CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
-    docker:
-      - image: maven:3.8.8-openjdk-17
+    runs-on: ubuntu-latest
+
     steps:
-      - checkout
-      - run:
-          name: Set up Maven cache
-          command: |
-            mkdir -p ~/.m2
-      - restore_cache:
-          keys:
-            - maven-deps-{{ checksum "pom.xml" }}
-      - run:
-          name: Build with Maven
-          command: mvn clean package
-      - save_cache:
-          paths:
-            - ~/.m2/repository
-          key: maven-deps-{{ checksum "pom.xml" }}
-      - store_artifacts:
-          path: target
-          destination: build-artifacts
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-m2
+
+      - name: Build with Maven
+        run: mvn clean package
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: java-app
+          path: target/*.jar
 
   test:
-    docker:
-      - image: maven:3.8.8-openjdk-17
+    runs-on: ubuntu-latest
+    needs: build
+
     steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - maven-deps-{{ checksum "pom.xml" }}
-      - run:
-          name: Run tests
-          command: mvn test
-      - store_test_results:
-          path: target/surefire-reports
-      - store_artifacts:
-          path: target
-          destination: test-artifacts
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-m2
+
+      - name: Run Tests
+        run: mvn test
 
   deploy:
-    docker:
-      - image: ubuntu:latest
-    steps:
-      - checkout
-      - run:
-          name: Deploy to production
-          command: |
-            echo "Deploying application..."
-            # Add deployment commands (like moving files, git push, etc.)
+    runs-on: ubuntu-latest
+    needs: test
 
-workflows:
-  version: 2
-  deploy_pipeline:
-    jobs:
-      - build
-      - test:
-          requires:
-            - build
-      - deploy:
-          requires:
-            - test
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Deploy Build Artifact
+        run: |
+          echo "Deploying the application..."
+          # Add your deployment commands here (e.g., scp, SSH for server deployment)
